@@ -35,8 +35,8 @@ impl Transaction {
             caller: "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
             origin: "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
             to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
-            gas_limit: zero(),
-            gas_price: zero(),
+            gas_limit: BigUint::from(10000u32),
+            gas_price: BigUint::from(1u8),
         }
     }
     pub fn init(
