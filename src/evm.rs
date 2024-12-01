@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-
+use crate::stack::Stack;
+use crate::stack::StackData;
 use crate::const_var::*;
 use crate::curr_block::*;
 use crate::log_entry::LogEntry;
@@ -20,7 +21,7 @@ pub struct Evm {
     pub pc: usize,
     //堆栈
     //每个元素长度为256位（32字节），最大深度为1024元素，但是每个操作只能操作堆栈顶的16个元素
-    pub stack: Vec<(BigUint, u8)>,
+    pub stack: Stack,
     //存储
     pub storage: HashMap<BigUint, (BigUint, u8)>,
     //内存
@@ -80,7 +81,7 @@ impl Evm {
         Evm {
             code: code,
             pc: 0,
-            stack: Vec::<(BigUint, u8)>::new(),
+            stack: Stack::new(),
             memory: Vec::<u8>::new(),
             storage: HashMap::new(),
             valid_jumpdest: valid_jumpdest,
@@ -125,7 +126,7 @@ impl Evm {
         Evm {
             code: code,
             pc: 0,
-            stack: Vec::<(BigUint, u8)>::new(),
+            stack: Stack::new(),
             memory: Vec::<u8>::new(),
             storage: HashMap::new(),
             valid_jumpdest: valid_jumpdest,
@@ -199,7 +200,7 @@ impl Evm {
                     self.swap(index);
                 }
                 PUSH0 => {
-                    self.stack.push((BigUint::from(0u32), 0u8));
+                    self.stack.push(StackData::new(0u8.to_be_bytes().to_vec(),0u8));
                     // self.pc += size; // 此行应当被删除或者注释掉，因为在 PUSH0 的情况下并未定义 size
                 }
                 POP => {
@@ -481,7 +482,8 @@ impl Evm {
             })
             .1;
         info!("PUSH的值为:{}", vec_to_hex_string(result.to_radix_be(16)));
-        self.stack.push((result, 0u8));
+    
+        self.stack.push(StackData::new(result.to_bytes_be(),0u8));
         // 入栈时程序计数器累加，size为入栈元素的个数
         info!("程序计数器:{}(将size个元素入栈，pc+size)", self.pc + size);
         self.pc += size
@@ -500,7 +502,7 @@ impl Evm {
             panic!("Stack underflow");
         }
         info!("复制栈顶元素，并压入栈顶");
-        let top_element = self.stack[self.stack.len() - index].clone();
+        let top_element = self.stack.get(index);
         self.stack.push(top_element);
     }
     /// 交换指令
@@ -539,40 +541,46 @@ pub fn init_log() {
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 }
 
-#[test]
-fn test_push() {
-    let excute_codes = "62ff0011";
-    let bytes = hex::decode(excute_codes).unwrap();
-    // let bytes = vec![0x61, 0xff,0x00];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
-
-#[test]
-fn test_idx() {
-    let mut value: u32 = u32::from_str_radix(0xff.to_string().as_str(), 16).unwrap();
-    if 0xff > 0x09 {
-        value = 0xff.clone() as u32;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_push() {
+        let excute_codes = "62ff0011";
+        let bytes = hex::decode(excute_codes).unwrap();
+        // let bytes = vec![0x61, 0xff,0x00];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
     }
-    let result: BigUint = BigUint::from(value) << 8;
-    println!("PUSH的值为:{}", vec_to_hex_string(result.to_radix_be(16)));
+    
+    #[test]
+    fn test_idx() {
+        let mut value: u32 = u32::from_str_radix(0xff.to_string().as_str(), 16).unwrap();
+        if 0xff > 0x09 {
+            value = 0xff.clone() as u32;
+        }
+        let result: BigUint = BigUint::from(value) << 8;
+        println!("PUSH的值为:{}", vec_to_hex_string(result.to_radix_be(16)));
+    }
+    
+    #[test]
+    fn test_dup() {
+        let excute_codes = "62ff001180";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
+    
+    #[test]
+    fn test_swap() {
+        let excute_codes = "60016011600291";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }
 
-#[test]
-fn test_dup() {
-    let excute_codes = "62ff001180";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
 
-#[test]
-fn test_swap() {
-    let excute_codes = "60016011600291";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}

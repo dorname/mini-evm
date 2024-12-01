@@ -5,5 +5,6 @@ pub mod fake_db;
 pub mod log_entry;
 pub mod log_utils;
 pub mod ops;
+pub mod stack;
 pub mod transaction;
 pub mod utils;

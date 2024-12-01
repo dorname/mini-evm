@@ -1,4 +1,4 @@
-use crate::evm::Evm;
+use crate::{evm::Evm, stack::StackData};
 use crate::ops::traits::AccountTraits;
 use crate::utils::*;
 use log::{info, logger};
@@ -11,19 +11,19 @@ impl AccountTraits for Evm {
         if self.stack.len() < 1 {
             panic!("Stack underflow");
         }
-        let addr_int = get_uint256(self.stack.pop().unwrap());
+        let addr_int = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let balance = get_account_db().get_account(addr_str).balance.clone();
-        self.stack.push((balance, 0u8));
+        self.stack.push(StackData::new(balance.to_bytes_be(), 0u8));
     }
     fn extcodecopy(&mut self) {
         if self.stack.len() < 4 {
             panic!("Stack underflow");
         }
-        let addr_int = get_uint256(self.stack.pop().unwrap());
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let code_offset = get_uint256(self.stack.pop().unwrap());
-        let lenght = get_uint256(self.stack.pop().unwrap());
+        let addr_int = get_uint256(self.stack.pop());
+        let mem_offset = get_uint256(self.stack.pop());
+        let code_offset = get_uint256(self.stack.pop());
+        let lenght = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let offset = (lenght.clone() + mem_offset.clone()).to_usize().unwrap();
         let code_offset_len = (lenght.clone() + code_offset.clone()).to_usize().unwrap();
@@ -54,20 +54,20 @@ impl AccountTraits for Evm {
         if self.stack.len() < 1 {
             panic!("Stack underflow");
         }
-        let addr_int = get_uint256(self.stack.pop().unwrap());
+        let addr_int = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let code = get_account_db().get_account(addr_str).code.clone();
         let code_hash = keccak256(&code).to_vec();
-        self.stack.push((BigUint::from_bytes_be(&code_hash), 0u8));
+        self.stack.push(StackData::new(code_hash, 0u8));
     }
     fn extcodesize(&mut self) {
         if self.stack.len() < 1 {
             panic!("Stack underflow");
         }
-        let addr_int = get_uint256(self.stack.pop().unwrap());
+        let addr_int = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let code = get_account_db().get_account(addr_str).code.clone();
-        self.stack.push((BigUint::from(code.len()), 0u8));
+        self.stack.push(StackData::new(code.len().to_be_bytes().to_vec(), 0u8));
     }
 }
 
@@ -95,7 +95,8 @@ fn test_extcodehash() {
     let bytes = hex::decode(excute_codes).unwrap();
     let mut evm_test = Evm::new(bytes);
     evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.stack[0].0.to_bytes_be()));
+    println!("{:?}", vec_to_hex_string(evm_test.stack.get(0).data));
+    // println!("{:?}", vec_to_hex_string(evm_test.stack[0].0.to_bytes_be()));
 }
 
 #[test]

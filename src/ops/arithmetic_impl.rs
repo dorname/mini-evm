@@ -1,4 +1,4 @@
-use crate::evm::Evm;
+use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
@@ -18,8 +18,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "ADD".to_owned(),
             "+".to_owned(),
@@ -66,7 +66,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b.clone());
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, sign_a_b));
+        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 乘法指令
@@ -80,8 +80,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "MUL".to_owned(),
             "*".to_owned(),
@@ -104,7 +104,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(same_sign);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, same_sign));
+        self.stack.push(StackData::new(result.to_bytes_be(), same_sign));
     }
 
     /// 减法指令
@@ -118,8 +118,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let sign_a = unit_a.1;
         let sign_b = unit_b.1;
         let mut logger = LogTemplate::new_two_cal(
@@ -159,7 +159,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, sign_a_b));
+        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 除法指令
@@ -173,8 +173,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "DIV".to_owned(),
             "/".to_owned(),
@@ -192,7 +192,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     ///带符号除法运算
@@ -206,8 +206,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SDIV".to_owned(),
             "/".to_owned(),
@@ -235,7 +235,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, sign_a_b));
+        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 取模指令
@@ -249,8 +249,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "MOD".to_owned(),
             "%".to_owned(),
@@ -268,7 +268,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     /// 带符号取模运算
@@ -282,8 +282,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SMOD".to_owned(),
             "%".to_owned(),
@@ -310,7 +310,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(is_negative);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, is_negative));
+        self.stack.push(StackData::new(result.to_bytes_be(), is_negative));
     }
 
     /// 加法取模运算
@@ -324,9 +324,9 @@ impl Arithmetic for Evm {
         if self.stack.len() < 3 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
-        let unit_c = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
+        let unit_c = self.stack.pop();
         let mut logger = LogTemplate::new_three_cal(
             "ADDMOD".to_owned(),
             "+".to_owned(),
@@ -359,7 +359,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(is_negative);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, is_negative));
+        self.stack.push(StackData::new(result.to_bytes_be(), is_negative));
     }
 
     /// 乘法取模指令
@@ -373,9 +373,9 @@ impl Arithmetic for Evm {
         if self.stack.len() < 3 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
-        let unit_c = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
+        let unit_c = self.stack.pop();
         let mut logger = LogTemplate::new_three_cal(
             "MULMOD".to_owned(),
             "*".to_owned(),
@@ -403,7 +403,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b_c);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((mul_mod_result, sign_a_b_c));
+        self.stack.push(StackData::new(mul_mod_result.to_bytes_be(), sign_a_b_c));
     }
 
     /// 指数运算指令
@@ -417,8 +417,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "EXP".to_owned(),
             "^".to_owned(),
@@ -437,7 +437,7 @@ impl Arithmetic for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     /// 符号位扩展指令
@@ -451,8 +451,8 @@ impl Arithmetic for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_b = self.stack.pop().unwrap();
-        let unit_x = self.stack.pop().unwrap();
+        let unit_b = self.stack.pop();
+        let unit_x = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SIGNEXTEND".to_owned(),
             "extend".to_owned(),
@@ -512,13 +512,13 @@ impl Arithmetic for Evm {
             logger.log_real_val();
             // 将结果压回栈中
             self.stack
-                .push((result_uint, if is_negative { 1u8 } else { 0u8 }));
+                .push(StackData::new(result_uint.to_bytes_be(), if is_negative { 1u8 } else { 0u8 }));
         } else {
             logger.set_result(x.clone());
             logger.set_is_negative(0u8);
             logger.log_store_val();
             logger.log_real_val();
-            self.stack.push((x, 0u8));
+            self.stack.push(StackData::new(x.to_bytes_be(), 0u8));
         }
     }
 }
