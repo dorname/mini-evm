@@ -7,7 +7,9 @@
 The project includes unit tests for all implemented instructions, providing user-friendly logs throughout the execution process to aid in comprehending how the EVM executes contract code.
 
 To run a specific unit test, use:
-
+```git
+git checkout stable
+```
 ```rust
 cargo test <name-of-the-unit-test> 
 ```
