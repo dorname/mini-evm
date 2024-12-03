@@ -1,7 +1,7 @@
-use crate::evm::Evm;
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
+use crate::{evm::Evm, stack::StackData};
 use num_bigint::BigUint;
 use num_traits::{zero, One, ToPrimitive};
 
@@ -17,8 +17,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "AND".to_owned(),
             "&".to_owned(),
@@ -33,7 +33,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
     /// 或运算
     /// ```
@@ -46,8 +46,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "OR".to_owned(),
             "|".to_owned(),
@@ -62,7 +62,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     /// 异或运算
@@ -76,8 +76,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "XOR".to_owned(),
             "^".to_owned(),
@@ -92,7 +92,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     /// 非运算
@@ -106,7 +106,7 @@ impl Bitwise for Evm {
         if self.stack.len() < 1 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop().unwrap();
+        let unit_a = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "NOT".to_owned(),
             "!=".to_owned(),
@@ -121,7 +121,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(sign_a);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, sign_a));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
     /// 字节运算
     /// ```
@@ -134,8 +134,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_position = self.stack.pop().unwrap();
-        let unit_b = self.stack.pop().unwrap();
+        let unit_position = self.stack.pop();
+        let unit_b = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "BYTE".to_owned(),
             " byte ".to_owned(),
@@ -149,7 +149,8 @@ impl Bitwise for Evm {
             logger.set_is_negative(0u8);
             logger.log_store_val();
             logger.log_real_val();
-            self.stack.push((zero(), 0u8));
+            self.stack
+                .push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         } else {
             let b = unit_b.0;
             let result: BigUint = (b >> (8 * position.to_usize().unwrap())) & BigUint::from(0xffu8);
@@ -157,7 +158,7 @@ impl Bitwise for Evm {
             logger.set_is_negative(0u8);
             logger.log_store_val();
             logger.log_real_val();
-            self.stack.push((result, 0u8));
+            self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
         }
     }
 
@@ -172,8 +173,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_r = self.stack.pop().unwrap();
-        let unit_l = self.stack.pop().unwrap();
+        let unit_r = self.stack.pop();
+        let unit_l = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SHL".to_owned(),
             "<<".to_owned(),
@@ -193,7 +194,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
     /// 右移位运算
     /// ```
@@ -206,8 +207,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_r = self.stack.pop().unwrap();
-        let unit_l = self.stack.pop().unwrap();
+        let unit_r = self.stack.pop();
+        let unit_l = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SHR".to_owned(),
             ">>".to_owned(),
@@ -226,7 +227,7 @@ impl Bitwise for Evm {
         logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, 0u8));
+        self.stack.push(StackData::new(result.to_bytes_be(), 0u8));
     }
 
     ///符号右移位运算
@@ -240,8 +241,8 @@ impl Bitwise for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_r = self.stack.pop().unwrap();
-        let unit_l = self.stack.pop().unwrap();
+        let unit_r = self.stack.pop();
+        let unit_l = self.stack.pop();
         let sign_l = unit_l.1;
         let mut logger = LogTemplate::new_two_cal(
             "SAR".to_owned(),
@@ -266,7 +267,8 @@ impl Bitwise for Evm {
         logger.set_is_negative(sign_l);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((result, sign_l));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), sign_l));
     }
 }
 

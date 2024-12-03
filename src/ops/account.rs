@@ -1,10 +1,8 @@
-use crate::{evm::Evm, stack::StackData};
 use crate::ops::traits::AccountTraits;
 use crate::utils::*;
-use log::{info, logger};
+use crate::{evm::Evm, stack::StackData};
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
-use std::io::Read;
 /// TODO 后面实现区块链用户部分完善
 impl AccountTraits for Evm {
     fn balance(&mut self) {
@@ -67,7 +65,8 @@ impl AccountTraits for Evm {
         let addr_int = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let code = get_account_db().get_account(addr_str).code.clone();
-        self.stack.push(StackData::new(code.len().to_be_bytes().to_vec(), 0u8));
+        self.stack
+            .push(StackData::new(code.len().to_be_bytes().to_vec(), 0u8));
     }
 }
 
