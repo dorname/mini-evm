@@ -1,6 +1,7 @@
 use std::f64::consts::E;
 
 use crate::ops::traits::{CurrentBlockInfo, Other};
+use crate::stack::StackData;
 use crate::transaction::Transaction;
 use crate::{evm, utils::*};
 use crate::{evm::Evm, log_entry::LogEntry};
@@ -25,12 +26,12 @@ impl Other for Evm {
             let end = (offset + size).to_usize().unwrap();
             memory[start..end].to_vec()
         }
-        let offset = get_uint256(self.stack.pop().unwrap());
-        let size = get_uint256(self.stack.pop().unwrap());
+        let offset = get_uint256(self.stack.pop());
+        let size = get_uint256(self.stack.pop());
         let data = get_data(&self.memory, offset, size);
         let hash = keccak256(&data).to_vec();
         info!("sha3:{:?}", vec_to_hex_string(hash.clone()));
-        self.stack.push((BigUint::from_bytes_be(&hash), 0u8));
+        self.stack.push(StackData::new(hash, 0u8));
     }
     /// log1-log4指令
     /// ```
@@ -44,11 +45,11 @@ impl Other for Evm {
         if self.stack.len() < 2 + num_topics {
             panic!("Stack underflow");
         }
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let length = get_uint256(self.stack.pop().unwrap());
+        let mem_offset = get_uint256(self.stack.pop());
+        let length = get_uint256(self.stack.pop());
         let topics: Vec<BigUint> = (0..num_topics)
             .into_iter()
-            .map(|_| get_uint256(self.stack.pop().unwrap()))
+            .map(|_| get_uint256(self.stack.pop()))
             .collect();
         let data = self.memory
             [mem_offset.to_usize().unwrap()..(mem_offset + length).to_usize().unwrap()]
@@ -78,9 +79,9 @@ impl Other for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let return_offset = get_uint256(self.stack.pop().unwrap());
-        let length = get_uint256(self.stack.pop().unwrap());
+        let mem_offset = get_uint256(self.stack.pop());
+        let return_offset = get_uint256(self.stack.pop());
+        let length = get_uint256(self.stack.pop());
         if (&return_offset + &length).to_usize().unwrap() > self.return_data.len() {
             panic!("Return data out of bounds");
         }
@@ -106,7 +107,7 @@ impl Other for Evm {
     /// ```
     fn return_datasize(&mut self) {
         self.stack
-            .push((BigUint::from(self.return_data.len()), 0u8));
+            .push(StackData::new(self.return_data.len().to_be_bytes().to_vec(), 0u8));
     }
     /// return指令
     /// 返回数据
@@ -121,8 +122,8 @@ impl Other for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let length = get_uint256(self.stack.pop().unwrap());
+        let mem_offset = get_uint256(self.stack.pop());
+        let length = get_uint256(self.stack.pop());
         info!("mem_offset:{}", &mem_offset.to_usize().unwrap());
         info!("length:{}", &length.to_usize().unwrap());
         if self.memory.len() < (&mem_offset + &length).to_usize().unwrap() {
@@ -147,8 +148,8 @@ impl Other for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let length = get_uint256(self.stack.pop().unwrap());
+        let mem_offset = get_uint256(self.stack.pop());
+        let length = get_uint256(self.stack.pop());
 
         let total_len = (&mem_offset + &length).to_usize().unwrap();
         //如果内存长度不足，拓展内存
@@ -164,7 +165,7 @@ impl Other for Evm {
     }
     fn gas(&mut self) {
         self.stack
-            .push((self.txn.get_gas_limit() - self.gas_used.clone(), 0u8));
+            .push(StackData::new((self.txn.get_gas_limit() - self.gas_used.clone()).to_bytes_be(), 0u8));
     }
 }
 

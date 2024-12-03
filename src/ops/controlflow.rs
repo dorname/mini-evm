@@ -1,6 +1,6 @@
 use core::panic;
 
-use crate::evm::Evm;
+use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
@@ -20,7 +20,7 @@ impl ControlFlow for Evm {
         if self.stack.len() < 1 {
             panic!("stack underflow");
         }
-        let destination = get_uint256(self.stack.pop().unwrap());
+        let destination = get_uint256(self.stack.pop());
         if self
             .valid_jumpdest
             .contains_key(&destination.to_usize().unwrap())
@@ -43,8 +43,8 @@ impl ControlFlow for Evm {
         if self.stack.len() < 2 {
             panic!("stack underflow");
         }
-        let destination = get_uint256(self.stack.pop().unwrap());
-        let condition = get_uint256(self.stack.pop().unwrap());
+        let destination = get_uint256(self.stack.pop());
+        let condition = get_uint256(self.stack.pop());
         if condition == BigUint::from(1u8) {
             if self
                 .valid_jumpdest
@@ -70,7 +70,7 @@ impl ControlFlow for Evm {
     /// println!("{:?}", evm_test.stack);
     /// ```
     fn pc(&mut self) {
-        self.stack.push((BigUint::from(self.pc - 1), 0u8));
+        self.stack.push(StackData::new(BigUint::from(self.pc - 1).to_bytes_be(), 0u8));
     }
 }
 

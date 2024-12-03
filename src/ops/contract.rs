@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::fake_db::{Account, AccountDb};
 use crate::ops::traits::*;
+use crate::stack::StackData;
 use crate::{evm, utils::*};
 use crate::{evm::Evm, transaction::Transaction};
 use log::*;
@@ -15,9 +16,9 @@ impl Contract for Evm {
             panic!("Stack underflow");
         }
         //获取堆栈数据
-        let value = get_uint256(self.stack.pop().unwrap());
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let lenght = get_uint256(self.stack.pop().unwrap());
+        let value = get_uint256(self.stack.pop());
+        let mem_offset = get_uint256(self.stack.pop());
+        let lenght = get_uint256(self.stack.pop());
 
         //拓展内存
         // 获取内存需要的长度
@@ -72,7 +73,7 @@ impl Contract for Evm {
 
         // 如果evm_sub实例返回错误，栈返回0,表示合约创建失败
         if !evm_sub.success {
-            self.stack.push((zero(), 0u8));
+            self.stack.push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         }
 
         //更新创建者的nouce
@@ -86,16 +87,16 @@ impl Contract for Evm {
 
         // 新创建合约的地址入栈
         self.stack
-            .push((BigUint::from_bytes_be(&this_address), 0u8));
+            .push(StackData::new(this_address, 0u8));
     }
     fn create2(&mut self) {
         if self.stack.len() < 4 {
             panic!("Stack underflow");
         }
-        let value = get_uint256(self.stack.pop().unwrap());
-        let mem_offset = get_uint256(self.stack.pop().unwrap());
-        let lenght = get_uint256(self.stack.pop().unwrap());
-        let salt = get_uint256(self.stack.pop().unwrap());
+        let value = get_uint256(self.stack.pop());
+        let mem_offset = get_uint256(self.stack.pop());
+        let lenght = get_uint256(self.stack.pop());
+        let salt = get_uint256(self.stack.pop());
 
         //拓展内存
         // 获取内存需要的长度
@@ -152,7 +153,7 @@ impl Contract for Evm {
 
         // 如果evm_sub实例返回错误，栈返回0,表示合约创建失败
         if !evm_create2.success {
-            self.stack.push((zero(), 0u8));
+            self.stack.push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         }
 
         //更新创建者的nouce
@@ -166,7 +167,7 @@ impl Contract for Evm {
 
         // 新创建合约的地址入栈
         self.stack
-            .push((BigUint::from_bytes_be(&new_contract_address_bytes), 0u8));
+            .push(StackData::new(new_contract_address_bytes.to_vec(), 0u8));
     }
     fn selfdestruct(&mut self) {
         if self.stack.len() < 1 {
@@ -174,7 +175,7 @@ impl Contract for Evm {
         }
 
         // 弹出接收ETH的指定地址
-        let raw_recipient = get_uint256(self.stack.pop().unwrap());
+        let raw_recipient = get_uint256(self.stack.pop());
         let recipient = "0x".to_string() + &hex::encode(raw_recipient.to_bytes_be().to_vec());
 
         let mut db = get_account_db_2();

@@ -520,7 +520,7 @@ impl Evm {
         }
         info!("交换栈顶元素和第{}个元素", index);
         let len = self.stack.len();
-        self.stack.swap(len - 1, len - index - 1);
+        self.stack.swap(len, index);
     }
     pub fn fill_memory(&mut self) {
         // 获取当前内存长度

@@ -1,4 +1,4 @@
-use crate::evm::Evm;
+use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
@@ -23,7 +23,7 @@ impl Memory for Evm {
         if self.stack.len() < 1 {
             panic!("Stack underflow");
         }
-        let offset = self.stack.pop().unwrap().0;
+        let offset = self.stack.pop().0;
         let info_err = format!("读取偏移位置为{:?}的内存", offset);
         let mut logger = LogTemplate::new_cal("MLOAD".to_owned(), info_err.to_owned());
         logger.log_cal();
@@ -31,7 +31,7 @@ impl Memory for Evm {
         logger.set_result(BigUint::from_bytes_be(&value));
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push((BigUint::from_bytes_be(&value),0u8));
+        self.stack.push(StackData::new(value,0u8));
     }
     /// 内存大小读指令
     /// ```
@@ -50,7 +50,7 @@ impl Memory for Evm {
         let mut logger = LogTemplate::new_cal("MSIZE".to_owned(), "获取当前内存大小".to_owned());
         logger.log_cal();
         logger.set_result(BigUint::from(self.memory.len()));
-        self.stack.push((BigUint::from(self.memory.len()), 0));
+        self.stack.push(StackData::new(self.memory.len().to_be_bytes().to_vec(), 0));
         logger.log_store_val();
         logger.log_real_val();
     }
@@ -68,8 +68,8 @@ impl Memory for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_offset = self.stack.pop().unwrap();
-        let unit_value = self.stack.pop().unwrap();
+        let unit_offset = self.stack.pop();
+        let unit_value = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "MSTORE".to_owned(),
             "mstore".to_owned(),
@@ -118,8 +118,8 @@ impl Memory for Evm {
         if self.stack.len() < 2 {
             panic!("Stack underflow");
         }
-        let unit_offset = self.stack.pop().unwrap();
-        let unit_value = self.stack.pop().unwrap();
+        let unit_offset = self.stack.pop();
+        let unit_value = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "MSTORE8".to_owned(),
             "mstore8".to_owned(),

@@ -1,3 +1,4 @@
+use core::fmt;
 use std::str;
 
 use num_bigint::BigUint;
@@ -32,7 +33,7 @@ impl Stack {
         self.0.swap(top-1,top-index-1);
     }
 }
-#[derive(Debug,Clone)]
+#[derive(Clone)]
 pub struct StackData {
     // 栈宽存储的位数256位，最大深度1024
     // 16*16 = 256 使用u16，数组长度为16。
@@ -47,18 +48,26 @@ impl StackData {
         if bytes.len() > 32 {
             panic!("stack overflow");
         }
-        println!("bytes: {:?},len:{:?}", bytes, bytes.len());
+        // println!("bytes: {:?},len:{:?}", bytes, bytes.len());
         let mut data = [0u8; 32].to_vec();
         // bytes 长度小于32时，则前补0填充
         // 补0策略1：data低字节不断插入bytes的元素，截取长度32-len..32
         if bytes.len() <= 32 {
             data = [[0u8; 32].to_vec(), bytes.clone()].concat();
         }
-        println!("data: {:?}", data);
+        // println!("data: {:?}", data);
         Self {
             data: data[bytes.len()..].to_vec(),
             sign: 0,
         }
+    }
+}
+impl fmt::Debug for StackData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("StackArch")
+        .field("data", &hex::encode(&self.data))
+        .field("sign", &self.sign)
+        .finish()
     }
 }
 
@@ -75,7 +84,7 @@ mod tests {
                 .to_vec(),
                 0u8
         );
-        println!("stack_data: {:?}", stack_data);
+        println!("{:?}", stack_data);
         println!("data len : {:?}", stack_data.data.len());
         println!("data: {:?}", hex::encode(stack_data.data));
     }

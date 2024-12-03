@@ -1,4 +1,4 @@
-use crate::evm::Evm;
+use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
@@ -18,17 +18,17 @@ impl Storage for Evm {
         if self.stack.len() < 1 {
             panic!("stack underflow");
         }
-        let key = get_uint256(self.stack.pop().unwrap());
+        let key = get_uint256(self.stack.pop());
         let info_err = format!("读取键值为{:?}的存储值", key);
         let mut logger = LogTemplate::new_cal("SLOAD".to_owned(), info_err.to_owned());
         logger.log_cal();
         if self.storage.contains_key(&key) {
             let value = self.storage.get(&key).unwrap();
             logger.set_result(get_uint256(value.clone()));
-            self.stack.push(value.clone());
+            self.stack.push(StackData::new(value.0.to_bytes_be(),value.1));
         } else {
             logger.set_result(zero());
-            self.stack.push((BigUint::from(0u8), 0));
+            self.stack.push(StackData::new(BigUint::from(0u8).to_bytes_be(), 0));
         }
         logger.log_store_val();
         logger.log_real_val();
@@ -46,8 +46,8 @@ impl Storage for Evm {
         if  self.stack.len() < 2 {
             panic!("stack underflow");
         }
-        let key = self.stack.pop().unwrap();
-        let value = self.stack.pop().unwrap();
+        let key = self.stack.pop();
+        let value = self.stack.pop();
         let mut logger = LogTemplate::new_two_cal(
             "SSTORE".to_owned(),
             "sstore".to_owned(),
