@@ -212,7 +212,7 @@ fn test_create() {
         zero(),
         zero(),
     );
-    evm::init_log();
+    // evm::init_log();
     let mut evm_test = Evm::init_evm(bytes, txn);
     evm_test.run();
     println!("{:?}", get_account_db());
@@ -237,7 +237,7 @@ fn test_create2() {
         zero(),
         zero(),
     );
-    evm::init_log();
+    // evm::init_log();
     let mut evm_test = Evm::init_evm(bytes, txn);
     evm_test.run();
     println!("{:?}", get_account_db());
@@ -261,7 +261,7 @@ fn test_selfdestruct() {
         zero(),
         zero(),
     );
-    evm::init_log();
+    // evm::init_log();
     println!("销毁前{:?}", get_account_db_2());
     let mut evm_test = Evm::init_evm(bytes, txn);
     evm_test.run();

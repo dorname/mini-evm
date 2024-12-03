@@ -57,8 +57,6 @@ impl Evm {
     /// let mut evm_test = Evm::new(bytes);
     /// ```
     pub fn new(code: Vec<u8>) -> Self {
-        init_log();
-
         // 初始化valid_jumpdest
         // let mut vaild_jumpdest: HashMap<usize, bool> = HashMap::new();
         let valid_jumpdest = code
@@ -537,18 +535,19 @@ impl Evm {
     }
 }
 
-pub fn init_log() {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    //一次初始化日志
+    use once_cell::sync::Lazy;
+    static INIT_LOG: Lazy<()> = Lazy::new(|| {
+        log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    });
     #[test]
     fn test_push() {
+        Lazy::force(&INIT_LOG);
         let excute_codes = "62ff0011";
         let bytes = hex::decode(excute_codes).unwrap();
-        // let bytes = vec![0x61, 0xff,0x00];
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
         println!("{:?}", evm_test.stack);
@@ -556,6 +555,7 @@ mod tests {
     
     #[test]
     fn test_idx() {
+        Lazy::force(&INIT_LOG);
         let mut value: u32 = u32::from_str_radix(0xff.to_string().as_str(), 16).unwrap();
         if 0xff > 0x09 {
             value = 0xff.clone() as u32;
@@ -566,6 +566,7 @@ mod tests {
     
     #[test]
     fn test_dup() {
+        Lazy::force(&INIT_LOG);
         let excute_codes = "62ff001180";
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
@@ -575,6 +576,7 @@ mod tests {
     
     #[test]
     fn test_swap() {
+        Lazy::force(&INIT_LOG);
         let excute_codes = "60016011600291";
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);

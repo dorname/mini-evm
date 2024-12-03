@@ -252,7 +252,7 @@ fn test_gas() {
         zero(),
         zero(),
     );
-    evm::init_log();
+    // evm::init_log();
     let mut evm_test = Evm::init_evm(bytes, txn);
     evm_test.run();
     println!("{:?}", evm_test.stack);
