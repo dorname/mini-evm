@@ -1,7 +1,7 @@
-use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
+use crate::{evm::Evm, stack::StackData};
 use num_bigint::{BigInt, BigUint, Sign};
 use num_integer::Integer;
 use num_traits::{zero, One, ToPrimitive, Zero};
@@ -66,7 +66,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b.clone());
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 乘法指令
@@ -104,7 +105,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(same_sign);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), same_sign));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), same_sign));
     }
 
     /// 减法指令
@@ -159,7 +161,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 除法指令
@@ -235,7 +238,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), sign_a_b));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), sign_a_b));
     }
 
     /// 取模指令
@@ -310,7 +314,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(is_negative);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), is_negative));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), is_negative));
     }
 
     /// 加法取模运算
@@ -359,7 +364,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(is_negative);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(result.to_bytes_be(), is_negative));
+        self.stack
+            .push(StackData::new(result.to_bytes_be(), is_negative));
     }
 
     /// 乘法取模指令
@@ -403,7 +409,8 @@ impl Arithmetic for Evm {
         logger.set_is_negative(sign_a_b_c);
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(mul_mod_result.to_bytes_be(), sign_a_b_c));
+        self.stack
+            .push(StackData::new(mul_mod_result.to_bytes_be(), sign_a_b_c));
     }
 
     /// 指数运算指令
@@ -511,8 +518,10 @@ impl Arithmetic for Evm {
             logger.log_store_val();
             logger.log_real_val();
             // 将结果压回栈中
-            self.stack
-                .push(StackData::new(result_uint.to_bytes_be(), if is_negative { 1u8 } else { 0u8 }));
+            self.stack.push(StackData::new(
+                result_uint.to_bytes_be(),
+                if is_negative { 1u8 } else { 0u8 },
+            ));
         } else {
             logger.set_result(x.clone());
             logger.set_is_negative(0u8);
@@ -523,98 +532,114 @@ impl Arithmetic for Evm {
     }
 }
 
-#[test]
-fn add_test() {
-    let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x01];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+#[cfg(test)]
+mod tests {
+    use once_cell::sync::Lazy;
+    use crate::evm::*;
+    #[test]
+    fn add_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x01];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn mul_test() {
-    let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x02];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn mul_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x02];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn sub_test() {
-    let bytes = vec![0x60, 0x04, 0x60, 0x03, 0x03, 0x60, 0x05, 0x01];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-    // println!("{:?}", get_uint256(evm_test.stack.get(0).unwrap().clone()));
-}
+    #[test]
+    fn sub_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x04, 0x60, 0x03, 0x03, 0x60, 0x05, 0x01];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+        // println!("{:?}", get_uint256(evm_test.stack.get(0).unwrap().clone()));
+    }
 
-#[test]
-fn div_test() {
-    // let bytes = vec![0x60, 0x06, 0x60, 0x12, 0x04];
-    let bytes = vec![0x60, 0x06, 0x60, 0x03, 0x04];
+    #[test]
+    fn div_test() {
+        Lazy::force(&INIT_LOG);
+        // let bytes = vec![0x60, 0x06, 0x60, 0x12, 0x04];
+        let bytes = vec![0x60, 0x06, 0x60, 0x03, 0x04];
 
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
-/// 算数指令
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
+    /// 算数指令
 
-#[test]
-fn sdiv_test() {
-    let bytes = vec![0x60, 0x04, 0x60, 0x02, 0x03, 0x60, 0x0b, 0x05];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn sdiv_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x04, 0x60, 0x02, 0x03, 0x60, 0x0b, 0x05];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn mod_test() {
-    let bytes = vec![0x60, 0x04, 0x60, 0x08, 0x06];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn mod_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x04, 0x60, 0x08, 0x06];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn smod_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x09, 0x07];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn smod_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x09, 0x07];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn add_mod_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
-    // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
+    #[test]
+    fn add_mod_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
+        // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
 
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn mul_mod_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
-    // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
+    #[test]
+    fn mul_mod_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
+        // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
 
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn exp_test() {
-    let bytes = vec![0x60, 0x03, 0x60, 0x02, 0x0a];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn exp_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x03, 0x60, 0x02, 0x0a];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn sign_extend_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x0b];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+    #[test]
+    fn sign_extend_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x0b];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }

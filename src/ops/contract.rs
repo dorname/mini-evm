@@ -73,7 +73,8 @@ impl Contract for Evm {
 
         // 如果evm_sub实例返回错误，栈返回0,表示合约创建失败
         if !evm_sub.success {
-            self.stack.push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
+            self.stack
+                .push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         }
 
         //更新创建者的nouce
@@ -86,8 +87,7 @@ impl Contract for Evm {
         );
 
         // 新创建合约的地址入栈
-        self.stack
-            .push(StackData::new(this_address, 0u8));
+        self.stack.push(StackData::new(this_address, 0u8));
     }
     fn create2(&mut self) {
         if self.stack.len() < 4 {
@@ -153,7 +153,8 @@ impl Contract for Evm {
 
         // 如果evm_sub实例返回错误，栈返回0,表示合约创建失败
         if !evm_create2.success {
-            self.stack.push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
+            self.stack
+                .push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         }
 
         //更新创建者的nouce
@@ -193,77 +194,86 @@ impl Contract for Evm {
     }
 }
 
-#[test]
-fn test_create() {
-    // let excute_codes = "5f5f6009f0";
-    let excute_codes = "6c63ffffffff6000526004601cf3600052600d60136000f0";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let txn = Transaction::init(
-        zero(),
-        zero(),
-        zero(),
-        "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
-        BigUint::from(10u8),
-        "".to_string(),
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
-        "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
-        zero(),
-        zero(),
-        zero(),
-    );
-    // evm::init_log();
-    let mut evm_test = Evm::init_evm(bytes, txn);
-    evm_test.run();
-    println!("{:?}", get_account_db());
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn test_create() {
+        Lazy::force(&INIT_LOG);
+        // let excute_codes = "5f5f6009f0";
+        let excute_codes = "6c63ffffffff6000526004601cf3600052600d60136000f0";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let txn = Transaction::init(
+            zero(),
+            zero(),
+            BigUint::from(100u8),
+            "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
+            BigUint::from(10u8),
+            "".to_string(),
+            "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
+            "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
+            "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
+            zero(),
+            zero(),
+            zero(),
+        );
+        // evm::init_log();
+        let mut evm_test = Evm::init_evm(bytes, txn);
+        evm_test.run();
+        println!("{:?}", get_account_db());
+    }
 
-#[test]
-fn test_create2() {
-    // let excute_codes = "5f5f5f6009f5";
-    let excute_codes = "6c63ffffffff6000526004601cf36000526004600d60136000f5";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let txn = Transaction::init(
-        zero(),
-        zero(),
-        zero(),
-        "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
-        BigUint::from(10u8),
-        "".to_string(),
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
-        "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
-        zero(),
-        zero(),
-        zero(),
-    );
-    // evm::init_log();
-    let mut evm_test = Evm::init_evm(bytes, txn);
-    evm_test.run();
-    println!("{:?}", get_account_db());
-}
+    #[test]
+    fn test_create2() {
+        Lazy::force(&INIT_LOG);
+        // let excute_codes = "5f5f5f6009f5";
+        let excute_codes = "6c63ffffffff6000526004601cf36000526004600d60136000f5";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let txn = Transaction::init(
+            zero(),
+            zero(),
+            zero(),
+            "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
+            BigUint::from(10u8),
+            "".to_string(),
+            "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
+            "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".to_string(),
+            "0x9bbfed6889322e016e0a02ee459d306fc19545d8".to_string(),
+            zero(),
+            zero(),
+            zero(),
+        );
+        // evm::init_log();
+        let mut evm_test = Evm::init_evm(bytes, txn);
+        evm_test.run();
+        println!("{:?}", get_account_db());
+    }
 
-#[test]
-fn test_selfdestruct() {
-    let excute_codes = "6020ff";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let txn = Transaction::init(
-        zero(),
-        zero(),
-        zero(),
-        "".to_string(),
-        BigUint::from(10u8),
-        "".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        zero(),
-        zero(),
-        zero(),
-    );
-    // evm::init_log();
-    println!("销毁前{:?}", get_account_db_2());
-    let mut evm_test = Evm::init_evm(bytes, txn);
-    evm_test.run();
-    println!("销毁后{:?}", get_account_db_2());
+    #[test]
+    fn test_selfdestruct() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6020ff";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let txn = Transaction::init(
+            zero(),
+            zero(),
+            zero(),
+            "".to_string(),
+            BigUint::from(10u8),
+            "".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            zero(),
+            zero(),
+            zero(),
+        );
+        // evm::init_log();
+        println!("销毁前{:?}", get_account_db_2());
+        let mut evm_test = Evm::init_evm(bytes, txn);
+        evm_test.run();
+        println!("销毁后{:?}", get_account_db_2());
+    }
 }

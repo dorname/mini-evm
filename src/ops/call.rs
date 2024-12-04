@@ -249,30 +249,39 @@ impl Call for Evm {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
 
-#[test]
-fn test_call() {
-    let excute_codes = "6001601f5f5f6001731000000000000000000000000000000000000c425ff15f51";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+    #[test]
+    fn test_call() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6001601f5f5f6001731000000000000000000000000000000000000c425ff15f51";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
+    
+    #[test]
+    fn test_delegate_call() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6001601f5f5f731000000000000000000000000000000000000c425ff45f51";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
+    
+    #[test]
+    fn test_static_call() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6001601f5f5f731000000000000000000000000000000000000c425ffA5f51";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }
 
-#[test]
-fn test_delegate_call() {
-    let excute_codes = "6001601f5f5f731000000000000000000000000000000000000c425ff45f51";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
-
-#[test]
-fn test_static_call() {
-    let excute_codes = "6001601f5f5f731000000000000000000000000000000000000c425ffA5f51";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}

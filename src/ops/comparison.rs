@@ -222,54 +222,65 @@ impl Comparison for Evm {
     }
 }
 
-#[test]
-fn lt_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x10];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+#[cfg(test)]
+mod tests {
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn lt_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x10];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn gt_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x11];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn gt_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x11];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn slt_test() {
-    let bytes = vec![
-        0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x01, 0x03, 0x12,
-    ];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn slt_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![
+            0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x01, 0x03, 0x12,
+        ];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn sgt_test() {
-    let bytes = vec![
-        0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x03, 0x03, 0x13,
-    ];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn sgt_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![
+            0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x03, 0x03, 0x13,
+        ];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn eq_test() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x08, 0x14];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn eq_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x08, 0x14];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn is_zero_test() {
-    let bytes = vec![0x60, 0x00, 0x15];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+    #[test]
+    fn is_zero_test() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x00, 0x15];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }

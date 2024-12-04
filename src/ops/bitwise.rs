@@ -272,45 +272,56 @@ impl Bitwise for Evm {
     }
 }
 
-#[test]
-fn test_and() {
-    let bytes = vec![0x60, 0x08, 0x60, 0x06, 0x03, 0x60, 0x02, 0x16];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+#[cfg(test)]
+mod tests {
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn test_and() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x60, 0x08, 0x60, 0x06, 0x03, 0x60, 0x02, 0x16];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_byte() {
-    let bytes = vec![0x61, 0xff, 0x00, 0x60, 30, 0x1a];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn test_byte() {
+        Lazy::force(&INIT_LOG);
+        let bytes = vec![0x61, 0xff, 0x00, 0x60, 30, 0x1a];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_shl() {
-    let excute_codes = "7fff0000000000000000000000000000000000000000000000000000000000000060041b";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn test_shl() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes =
+            "7fff0000000000000000000000000000000000000000000000000000000000000060041b";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_shr() {
-    let excute_codes = "60ff60041c";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn test_shr() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60ff60041c";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_sar() {
-    let excute_codes = "60ff60ee0360011d";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+    #[test]
+    fn test_sar() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60ff60ee0360011d";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }

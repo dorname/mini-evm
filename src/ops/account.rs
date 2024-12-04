@@ -55,7 +55,7 @@ impl AccountTraits for Evm {
         let addr_int = get_uint256(self.stack.pop());
         let addr_str = format!("0x{}", vec_to_hex_string(addr_int.to_bytes_be()));
         let code = get_account_db().get_account(addr_str).code.clone();
-        let code_hash = keccak256(&code).to_vec();
+        let code_hash: Vec<u8> = keccak256(&code).to_vec();
         self.stack.push(StackData::new(code_hash, 0u8));
     }
     fn extcodesize(&mut self) {
@@ -70,39 +70,48 @@ impl AccountTraits for Evm {
     }
 }
 
-#[test]
-fn test_balance() {
-    let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d831";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn test_balance() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d831";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_extcodesize() {
-    let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d83B";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn test_extcodesize() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d83B";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_extcodehash() {
-    let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d83F";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.stack.get(0).data));
-    // println!("{:?}", vec_to_hex_string(evm_test.stack[0].0.to_bytes_be()));
-}
+    #[test]
+    fn test_extcodehash() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "739bbfed6889322e016e0a02ee459d306fc19545d83F";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn test_extcodecopy() {
-    let excute_codes = "60045F5F739bbfed6889322e016e0a02ee459d306fc19545d83C";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.memory));
+    #[test]
+    fn test_extcodecopy() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60045F5F739bbfed6889322e016e0a02ee459d306fc19545d83C";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", vec_to_hex_string(evm_test.memory));
+    }
 }

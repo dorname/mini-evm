@@ -12,6 +12,7 @@ use log::*;
 use num_bigint::BigUint;
 use num_traits::zero;
 use num_traits::{ToPrimitive, Zero};
+use once_cell::sync::Lazy;
 
 #[derive(Debug)]
 pub struct Evm {
@@ -535,14 +536,13 @@ impl Evm {
     }
 }
 
+pub static INIT_LOG: Lazy<()> = Lazy::new(|| {
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+});
 #[cfg(test)]
 mod tests {
     use super::*;
-    //一次初始化日志
     use once_cell::sync::Lazy;
-    static INIT_LOG: Lazy<()> = Lazy::new(|| {
-        log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    });
     #[test]
     fn test_push() {
         Lazy::force(&INIT_LOG);
