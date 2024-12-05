@@ -1,9 +1,9 @@
-use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
+use crate::{evm::Evm, stack::StackData};
 use num_bigint::BigUint;
-use num_traits::{ToPrimitive};
+use num_traits::ToPrimitive;
 
 impl Memory for Evm {
     /// 内存读指令
@@ -27,11 +27,11 @@ impl Memory for Evm {
         let info_err = format!("读取偏移位置为{:?}的内存", offset);
         let mut logger = LogTemplate::new_cal("MLOAD".to_owned(), info_err.to_owned());
         logger.log_cal();
-        let value = self.memory[offset.to_usize().unwrap()*(self.memory.len()/32)..].to_vec();
+        let value = self.memory[offset.to_usize().unwrap() * (self.memory.len() / 32)..].to_vec();
         logger.set_result(BigUint::from_bytes_be(&value));
         logger.log_store_val();
         logger.log_real_val();
-        self.stack.push(StackData::new(value,0u8));
+        self.stack.push(StackData::new(value, 0u8));
     }
     /// 内存大小读指令
     /// ```
@@ -50,11 +50,12 @@ impl Memory for Evm {
         let mut logger = LogTemplate::new_cal("MSIZE".to_owned(), "获取当前内存大小".to_owned());
         logger.log_cal();
         logger.set_result(BigUint::from(self.memory.len()));
-        self.stack.push(StackData::new(self.memory.len().to_be_bytes().to_vec(), 0));
+        self.stack
+            .push(StackData::new(self.memory.len().to_be_bytes().to_vec(), 0));
         logger.log_store_val();
         logger.log_real_val();
     }
-    
+
     /// 内存写指令
     /// 一个十六进制数代表4位
     /// ```
@@ -148,41 +149,50 @@ impl Memory for Evm {
     }
 }
 
-#[test]
-fn mstore_test() {
-    // let excute_codes = "60ff600152";
-    let excute_codes = "61ff02600152";
-    // let excute_codes = "61ff02601452";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.memory));
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn mstore_test() {
+        Lazy::force(&INIT_LOG);
+        // let excute_codes = "60ff600152";
+        let excute_codes = "61ff02600152";
+        // let excute_codes = "61ff02601452";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", vec_to_hex_string(evm_test.memory));
+    }
 
-#[test]
-fn mstore8_test() {
-    let excute_codes = "61ff02600153";
-    // let excute_codes = "6002602053";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.memory));
-}
+    #[test]
+    fn mstore8_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "61ff02600153";
+        // let excute_codes = "6002602053";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", vec_to_hex_string(evm_test.memory));
+    }
 
-#[test]
-fn msize_test() {
-    let excute_codes = "61ff0260015359";
-    // let excute_codes = "61ff0260015259";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-}
+    #[test]
+    fn msize_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "61ff0260015359";
+        // let excute_codes = "61ff0260015259";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+    }
 
-
-#[test]
-fn mload_test() {
-    let excute_codes = "61ff02600153600151";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
+    #[test]
+    fn mload_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "61ff02600153600151";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+    }
 }

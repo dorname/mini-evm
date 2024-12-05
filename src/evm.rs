@@ -435,6 +435,8 @@ impl Evm {
                 }
             }
             if &self.gas_used > self.txn.get_gas_limit() {
+                info!("gas_used:{}", self.gas_used);
+                info!("gas_limit:{}", self.txn.get_gas_limit());
                 panic!("Out of gas!");
             }
         }

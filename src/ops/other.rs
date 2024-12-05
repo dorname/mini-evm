@@ -169,96 +169,110 @@ impl Other for Evm {
     }
 }
 
-#[test]
-fn test_sha3() {
-    let excute_codes = "5F5F20";
-    let bytes = hex::decode(excute_codes).unwrap();
-    // let bytes = vec![0x61, 0xff,0x00];
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn test_sha3() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "5F5F20";
+        let bytes = hex::decode(excute_codes).unwrap();
+        // let bytes = vec![0x61, 0xff,0x00];
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
+    
+    #[test]
+    fn test_log() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60aa6000526001601fa0";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.logs);
+    }
+    
+    #[test]
+    fn test_return() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60a26000526001601ff3";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.return_data);
+    }
+    
+    #[test]
+    fn test_returnsize() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "61aaaa6000526002601ff33d";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.return_data);
+        println!("{:?}", evm_test.stack);
+    }
+    
+    #[test]
+    fn test_returncopy() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60a26000526001601ff3";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.return_data);
+        println!("{:?}", evm_test.stack);
+        println!("{:?}", vec_to_hex_string(evm_test.memory.clone()));
+        let next_excute_codes = "6001600060003e";
+        let next_bytes = hex::decode(next_excute_codes).unwrap();
+        evm_test.next_codes(next_bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.return_data);
+        println!("{:?}", evm_test.stack);
+        println!("{:?}", vec_to_hex_string(evm_test.memory.clone()));
+    }
+    
+    #[test]
+    fn test_revert() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60aa6000526001601ffd";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", vec_to_hex_string(evm_test.return_data));
+    }
+    
+    #[test]
+    fn test_gas() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60205a";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let txn = Transaction::init(
+            zero(),
+            BigUint::from(1u8),
+            BigUint::from(100u8),
+            "".to_string(),
+            BigUint::from(10u8),
+            "".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            "0x1000000000000000000000000000000000000c42".to_string(),
+            zero(),
+            zero(),
+            zero(),
+        );
+        // evm::init_log();
+        let mut evm_test = Evm::init_evm(bytes, txn);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+        println!(
+            "gaslimit={:?},gasused={:?}",
+            evm_test.txn.get_gas_limit(),
+            evm_test.gas_used
+        );
+    }    
 }
 
-#[test]
-fn test_log() {
-    let excute_codes = "60aa6000526001601fa0";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.logs);
-}
-
-#[test]
-fn test_return() {
-    let excute_codes = "60a26000526001601ff3";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.return_data);
-}
-
-#[test]
-fn test_returnsize() {
-    let excute_codes = "61aaaa6000526002601ff33d";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.return_data);
-    println!("{:?}", evm_test.stack);
-}
-
-#[test]
-fn test_returncopy() {
-    let excute_codes = "60a26000526001601ff3";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.return_data);
-    println!("{:?}", evm_test.stack);
-    println!("{:?}", vec_to_hex_string(evm_test.memory.clone()));
-    let next_excute_codes = "6001600060003e";
-    let next_bytes = hex::decode(next_excute_codes).unwrap();
-    evm_test.next_codes(next_bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.return_data);
-    println!("{:?}", evm_test.stack);
-    println!("{:?}", vec_to_hex_string(evm_test.memory.clone()));
-}
-
-#[test]
-fn test_revert() {
-    let excute_codes = "60aa6000526001601ffd";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", vec_to_hex_string(evm_test.return_data));
-}
-
-#[test]
-fn test_gas() {
-    let excute_codes = "60205a";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let txn = Transaction::init(
-        zero(),
-        BigUint::from(1u8),
-        BigUint::from(100u8),
-        "".to_string(),
-        BigUint::from(10u8),
-        "".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        "0x1000000000000000000000000000000000000c42".to_string(),
-        zero(),
-        zero(),
-        zero(),
-    );
-    // evm::init_log();
-    let mut evm_test = Evm::init_evm(bytes, txn);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-    println!(
-        "gaslimit={:?},gasused={:?}",
-        evm_test.txn.get_gas_limit(),
-        evm_test.gas_used
-    );
-}

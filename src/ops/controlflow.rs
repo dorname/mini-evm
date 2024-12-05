@@ -1,9 +1,9 @@
 use core::panic;
 
-use crate::{evm::Evm, stack::StackData};
 use crate::log_utils::*;
 use crate::ops::traits::*;
 use crate::utils::*;
+use crate::{evm::Evm, stack::StackData};
 use log::info;
 use num_bigint::BigUint;
 use num_traits::{zero, ToPrimitive};
@@ -70,42 +70,53 @@ impl ControlFlow for Evm {
     /// println!("{:?}", evm_test.stack);
     /// ```
     fn pc(&mut self) {
-        self.stack.push(StackData::new(BigUint::from(self.pc - 1).to_bytes_be(), 0u8));
+        self.stack.push(StackData::new(
+            BigUint::from(self.pc - 1).to_bytes_be(),
+            0u8,
+        ));
     }
 }
+#[cfg(test)]
+mod tests {
+    use crate::evm::*;
+    use once_cell::sync::Lazy;
+    #[test]
+    fn stop_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "60040058";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn stop_test() {
-    let excute_codes = "60040058";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn jump_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "600456005B";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn jump_test() {
-    let excute_codes = "600456005B";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
+    #[test]
+    fn jumpi_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6001600657005B";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 
-#[test]
-fn jumpi_test() {
-    let excute_codes = "6001600657005B";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
-}
-
-#[test]
-fn pc_test() {
-    let excute_codes = "6001600657005B58";
-    let bytes = hex::decode(excute_codes).unwrap();
-    let mut evm_test = Evm::new(bytes);
-    evm_test.run();
-    println!("{:?}", evm_test.stack);
+    #[test]
+    fn pc_test() {
+        Lazy::force(&INIT_LOG);
+        let excute_codes = "6001600657005B58";
+        let bytes = hex::decode(excute_codes).unwrap();
+        let mut evm_test = Evm::new(bytes);
+        evm_test.run();
+        println!("{:?}", evm_test.stack);
+    }
 }
