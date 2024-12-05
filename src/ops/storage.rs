@@ -64,7 +64,6 @@ impl Storage for Evm {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::evm::*;
     use once_cell::sync::Lazy;
     #[test]
