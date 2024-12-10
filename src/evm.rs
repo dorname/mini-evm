@@ -552,7 +552,7 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!(&hex::encode(evm_test.stack.get(1).data), "0000000000000000000000000000000000000000000000000000000000ff0011");
     }
     
     #[test]
@@ -573,7 +573,8 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!(&hex::encode(evm_test.stack.get(1).data), "0000000000000000000000000000000000000000000000000000000000ff0011");
+        assert_eq!(&hex::encode(evm_test.stack.get(2).data), "0000000000000000000000000000000000000000000000000000000000ff0011");
     }
     
     #[test]
@@ -583,7 +584,10 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        // 根据原本的输入 栈的内容：01 11 02 交换之后  02 11 01
+        assert_eq!(&hex::encode(evm_test.stack.get(1).data), "0000000000000000000000000000000000000000000000000000000000000001");
+        assert_eq!(&hex::encode(evm_test.stack.get(2).data), "0000000000000000000000000000000000000000000000000000000000000011");
+        assert_eq!(&hex::encode(evm_test.stack.get(3).data), "0000000000000000000000000000000000000000000000000000000000000002");
     }
 }
 

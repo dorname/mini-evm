@@ -179,7 +179,7 @@ mod tests {
         evm_test.run();
         assert_eq!(
             "00000000000000000000000000000000000000000000000000000000000000ff0200000000000000000000000000000000000000000000000000000000000000".to_owned(),
-            vec_to_hex_string(evm_test.memory));
+            hex::encode(evm_test.memory));
     }
 
     #[test]
@@ -192,7 +192,7 @@ mod tests {
         evm_test.run();
         assert_eq!(
             "0002000000000000000000000000000000000000000000000000000000000000",
-            vec_to_hex_string(evm_test.memory)
+            hex::encode(evm_test.memory)
         );
     }
 
@@ -207,7 +207,7 @@ mod tests {
         // 测试内存
         assert_eq!(
             "0002000000000000000000000000000000000000000000000000000000000000",
-            vec_to_hex_string(evm_test.memory)
+            hex::encode(evm_test.memory)
         );
         // 测试stack存储,evm.codes的官网会把前面多余的0去掉不展示，这里展示完整的stack内容，因为补0是EVM真实的操作
         assert_eq!(
@@ -227,12 +227,12 @@ mod tests {
         // 测试内存 这里evm.codes的官网会多展示64位而且都是0，暂时不知道为什么
         assert_eq!(
             "00020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-            vec_to_hex_string(evm_test.memory)
+            &hex::encode(evm_test.memory)
         );
         // 测试stack存储,evm.codes的官网会把前面多余的0去掉不展示，这里展示完整的stack内容，因为补0是EVM真实的操作
         assert_eq!(
             "0200000000000000000000000000000000000000000000000000000000000000",
-            vec_to_hex_string(evm_test.stack.0.get(0).unwrap().data.to_vec())
+            &hex::encode(evm_test.stack.0.get(0).unwrap().data.to_vec())
         );
     }
 }
