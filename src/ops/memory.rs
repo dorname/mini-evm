@@ -27,7 +27,21 @@ impl Memory for Evm {
         let info_err = format!("读取偏移位置为{:?}的内存", offset);
         let mut logger = LogTemplate::new_cal("MLOAD".to_owned(), info_err.to_owned());
         logger.log_cal();
-        let value = self.memory[offset.to_usize().unwrap() * (self.memory.len() / 32)..].to_vec();
+       
+        // 如果内存长度不够，自动扩展
+        if self.memory.len() < (offset.clone() + BigUint::from(32u8)).to_usize().unwrap() {
+            let resize = match (offset.clone() + BigUint::from(32u8)).to_usize().unwrap() - self.memory.len(){
+                x if x > 0 => {
+                    (x-1)/32 + 1
+                }
+                _ => 0,
+            };
+            self.memory.resize(
+                resize*32+ self.memory.len(),
+                0,
+            ); // 将不足的部分填充为
+        }
+        let value = self.memory[offset.to_usize().unwrap()..(offset.clone() + BigUint::from(32u8)).to_usize().unwrap()].to_vec();
         logger.set_result(BigUint::from_bytes_be(&value));
         logger.log_store_val();
         logger.log_real_val();
@@ -163,7 +177,9 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", vec_to_hex_string(evm_test.memory));
+        assert_eq!(
+            "00000000000000000000000000000000000000000000000000000000000000ff0200000000000000000000000000000000000000000000000000000000000000".to_owned(),
+            vec_to_hex_string(evm_test.memory));
     }
 
     #[test]
@@ -174,7 +190,10 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", vec_to_hex_string(evm_test.memory));
+        assert_eq!(
+            "0002000000000000000000000000000000000000000000000000000000000000",
+            vec_to_hex_string(evm_test.memory)
+        );
     }
 
     #[test]
@@ -185,6 +204,16 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
+        // 测试内存
+        assert_eq!(
+            "0002000000000000000000000000000000000000000000000000000000000000",
+            vec_to_hex_string(evm_test.memory)
+        );
+        // 测试stack存储,evm.codes的官网会把前面多余的0去掉不展示，这里展示完整的stack内容，因为补0是EVM真实的操作
+        assert_eq!(
+            "0000000000000000000000000000000000000000000000000000000000000020",
+            hex::encode(evm_test.stack.get(evm_test.stack.len()).data)
+        );
     }
 
     #[test]
@@ -194,5 +223,16 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
+        // println!("{:?}", evm_test.stack.0.get(0).unwrap().data.to_vec());
+        // 测试内存 这里evm.codes的官网会多展示64位而且都是0，暂时不知道为什么
+        assert_eq!(
+            "00020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            vec_to_hex_string(evm_test.memory)
+        );
+        // 测试stack存储,evm.codes的官网会把前面多余的0去掉不展示，这里展示完整的stack内容，因为补0是EVM真实的操作
+        assert_eq!(
+            "0200000000000000000000000000000000000000000000000000000000000000",
+            vec_to_hex_string(evm_test.stack.0.get(0).unwrap().data.to_vec())
+        );
     }
 }

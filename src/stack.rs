@@ -6,7 +6,7 @@ use num_bigint::BigUint;
 // 实现一个存储结构清晰的evm栈结构，存储时尽量不使用第三方库的类型比如BigUint进行存储
 // 但计算时可以借用BigUint进行计算，避免复杂的位运算
 #[derive(Debug,Clone)]
-pub struct Stack(Vec<StackData>);
+pub struct Stack(pub Vec<StackData>);
 impl Stack {
     pub fn new() -> Self {
         Self(Vec::new())
@@ -48,14 +48,13 @@ impl StackData {
         if bytes.len() > 32 {
             panic!("stack overflow");
         }
-        // println!("bytes: {:?},len:{:?}", bytes, bytes.len());
         let mut data = [0u8; 32].to_vec();
         // bytes 长度小于32时，则前补0填充
         // 补0策略1：data低字节不断插入bytes的元素，截取长度32-len..32
         if bytes.len() <= 32 {
             data = [[0u8; 32].to_vec(), bytes.clone()].concat();
         }
-        // println!("data: {:?}", data);
+        println!("data: {:?}", data[bytes.len()..].to_vec());
         Self {
             data: data[bytes.len()..].to_vec(),
             sign: 0,
