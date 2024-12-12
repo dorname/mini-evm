@@ -612,8 +612,6 @@ mod tests {
     #[test]
     fn add_mod_test() {
         Lazy::force(&INIT_LOG);
-        // let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
-        // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
         let excute_codes = "60086004036001600908";
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
