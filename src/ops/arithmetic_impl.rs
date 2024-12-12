@@ -341,8 +341,8 @@ impl Arithmetic for Evm {
         );
         logger.log_three_cal();
         let sign_c = unit_c.1;
-        let a = get_uint256(unit_a);
-        let b = get_uint256(unit_b);
+        let a = unit_a.0;//get_uint256(unit_a);
+        let b = unit_b.0;//get_uint256(unit_b);
         let c = unit_c.0;//get_uint256(unit_c);
         if c.is_zero() {
             panic!("Mod by Zero");
@@ -390,27 +390,28 @@ impl Arithmetic for Evm {
             unit_c.clone(),
         );
         logger.log_three_cal();
-        let sign_a = unit_a.1;
-        let sign_b = unit_b.1;
-        let sign_c = unit_c.1;
+        // let sign_a = unit_a.1;
+        // let sign_b = unit_b.1;
+        // let sign_c = unit_c.1;
 
-        let a = get_uint256(unit_a);
-        let b = get_uint256(unit_b);
-        let c = get_uint256(unit_c);
+        let a = unit_a.0;//get_uint256(unit_a);
+        let b = unit_b.0;//get_uint256(unit_b);
+        let c = unit_c.0;//get_uint256(unit_c);
         if c.is_zero() {
             panic!("Mod by Zero");
         }
-        let sign_a_b_c = ((sign_a | sign_b | sign_c) != 0) as u8;
+        // let sign_a_b_c = ((sign_a | sign_b | sign_c) != 0) as u8;
         let mut mul_mod_result = (a.clone() * b.clone()) % c.clone();
-        if sign_a_b_c != 0 {
-            mul_mod_result = (BigUint::from(1u32) << 256) - mul_mod_result;
-        }
+        // if sign_a_b_c != 0 {
+        //     mul_mod_result = (BigUint::from(1u32) << 256) - mul_mod_result;
+        // }
         logger.set_result(mul_mod_result.clone());
-        logger.set_is_negative(sign_a_b_c);
+        // logger.set_is_negative(sign_a_b_c);
+        logger.set_is_negative(0u8);
         logger.log_store_val();
         logger.log_real_val();
         self.stack
-            .push(StackData::new(mul_mod_result.to_bytes_be(), sign_a_b_c));
+            .push(StackData::new(mul_mod_result.to_bytes_be(), 0u8));
     }
 
     /// 指数运算指令
@@ -623,29 +624,30 @@ mod tests {
     #[test]
     fn mul_mod_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
-        // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x09];
-
+        let excute_codes = "60086004036001600909";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000009",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn exp_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x03, 0x60, 0x02, 0x0a];
+        let excute_codes = "600360020a";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000008",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn sign_extend_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x0b];
+        let excute_codes = "600860040b";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000008",hex::encode(evm_test.stack.get(1).data));
     }
 }
