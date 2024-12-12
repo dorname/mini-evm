@@ -57,7 +57,7 @@ impl StackData {
         println!("data: {:?}", data[bytes.len()..].to_vec());
         Self {
             data: data[bytes.len()..].to_vec(),
-            sign: 0,
+            sign: sign,
         }
     }
 }

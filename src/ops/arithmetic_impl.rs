@@ -329,7 +329,7 @@ impl Arithmetic for Evm {
         if self.stack.len() < 3 {
             panic!("Stack underflow");
         }
-        let unit_a = self.stack.pop();
+        let unit_a: (BigUint, u8) = self.stack.pop();
         let unit_b = self.stack.pop();
         let unit_c = self.stack.pop();
         let mut logger = LogTemplate::new_three_cal(
@@ -343,7 +343,7 @@ impl Arithmetic for Evm {
         let sign_c = unit_c.1;
         let a = get_uint256(unit_a);
         let b = get_uint256(unit_b);
-        let c = get_uint256(unit_c);
+        let c = unit_c.0;//get_uint256(unit_c);
         if c.is_zero() {
             panic!("Mod by Zero");
         }
@@ -354,12 +354,12 @@ impl Arithmetic for Evm {
         };
         let mut result: BigUint = (a + b) % c;
         // true 同号 为1 false 异号 为0
-        let same_sign = !((sign_a_b ^ sign_c) != 0) as u8;
+        // let same_sign = !((sign_a_b ^ sign_c) != 0) as u8;
         let mut is_negative = 0u8;
-        if same_sign == 0u8 {
-            is_negative = 1u8;
-            result = (BigUint::from(1u32) << 256) - result;
-        };
+        // if same_sign == 0u8 {
+        //     is_negative = 1u8;
+        //     result = (BigUint::from(1u32) << 256) - result;
+        // };
         logger.set_result(result.clone());
         logger.set_is_negative(is_negative);
         logger.log_store_val();
@@ -539,79 +539,87 @@ mod tests {
     #[test]
     fn add_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x01];
+        let excute_codes = "6002600301";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000005",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn mul_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x02, 0x60, 0x03, 0x02];
+        let excute_codes = "6002600302";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000006",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn sub_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x04, 0x60, 0x03, 0x03, 0x60, 0x05, 0x01];
+        let excute_codes = "6004600303600501";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
-        // println!("{:?}", get_uint256(evm_test.stack.get(0).unwrap().clone()));
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000004",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn div_test() {
         Lazy::force(&INIT_LOG);
-        // let bytes = vec![0x60, 0x06, 0x60, 0x12, 0x04];
-        let bytes = vec![0x60, 0x06, 0x60, 0x03, 0x04];
-
+        let excute_codes = "6006601204";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000003",hex::encode(evm_test.stack.get(1).data));
     }
     /// 算数指令
 
     #[test]
     fn sdiv_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x04, 0x60, 0x02, 0x03, 0x60, 0x0b, 0x05];
+        let excute_codes = "6004600203600b05";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn mod_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x04, 0x60, 0x08, 0x06];
+        let excute_codes = "6004600806";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000000",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn smod_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x09, 0x07];
+        let excute_codes = "6008600403600907";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
         println!("{:?}", evm_test.stack);
+        assert_eq!("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",hex::encode(evm_test.stack.get(1).data));
+
     }
 
     #[test]
     fn add_mod_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
+        // let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
         // let bytes = vec![0x60, 0x03, 0x60, 0x06, 0x03, 0x60, 0x01, 0x60, 0x09, 0x08];
-
+        let excute_codes = "60086004036001600908";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        // println!("{:?}", evm_test.stack);
+        assert_eq!("000000000000000000000000000000000000000000000000000000000000000a",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
