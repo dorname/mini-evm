@@ -279,16 +279,18 @@ mod tests {
     #[test]
     fn test_and() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x06, 0x03, 0x60, 0x02, 0x16];
+        let excute_codes = "6008600603600216";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000002",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn test_byte() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x61, 0xff, 0x00, 0x60, 30, 0x1a];
+        let excute_codes = "61ff0060301a";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
         println!("{:?}", evm_test.stack);
