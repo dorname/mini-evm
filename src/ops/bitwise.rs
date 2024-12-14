@@ -153,7 +153,7 @@ impl Bitwise for Evm {
                 .push(StackData::new(0u8.to_be_bytes().to_vec(), 0u8));
         } else {
             let b = unit_b.0;
-            let result: BigUint = (b >> (8 * position.to_usize().unwrap())) & BigUint::from(0xffu8);
+            let result = BigUint::from(*b.to_bytes_be().get(position.to_usize().unwrap()).unwrap());
             logger.set_result(result.clone());
             logger.set_is_negative(0u8);
             logger.log_store_val();
@@ -289,11 +289,11 @@ mod tests {
     #[test]
     fn test_byte() {
         Lazy::force(&INIT_LOG);
-        let excute_codes = "61ff0060301a";
+        let excute_codes = "7ff62ffffff1afffffffffffffffffffffffffffffffffffffffffffffffffffff60011a";
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("000000000000000000000000000000000000000000000000000000000000002f",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
@@ -304,7 +304,7 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("f000000000000000000000000000000000000000000000000000000000000000",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
@@ -314,7 +314,7 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("000000000000000000000000000000000000000000000000000000000000000f",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
@@ -324,6 +324,6 @@ mod tests {
         let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7",hex::encode(evm_test.stack.get(1).data));
     }
 }
