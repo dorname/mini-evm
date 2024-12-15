@@ -224,63 +224,72 @@ impl Comparison for Evm {
 
 #[cfg(test)]
 mod tests {
-    use crate::evm::*;
+    use crate::{evm::*, stack::{Stack, StackData}};
     use once_cell::sync::Lazy;
     #[test]
     fn lt_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x10];
+        let excute_codes = "6008600410";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000001",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn gt_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x04, 0x11];
+        let excute_codes = "6008600411";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
         println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000000",hex::encode(evm_test.stack.get(1).data));
+
     }
 
     #[test]
     fn slt_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![
-            0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x01, 0x03, 0x12,
-        ];
+        let excute_codes = "6008600403600660013012";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
         println!("{:?}", evm_test.stack);
+        let mut temp_stack =  Stack::new();
+        temp_stack.push(StackData::new(hex::decode("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc").unwrap(), 1));
+        temp_stack.push(StackData::new(hex::decode("0000000000000000000000000000000000000000000000000000000000000006").unwrap(), 0));
+        temp_stack.push(StackData::new(hex::decode("0000000000000000000000000000000000000000000000000000000000000000").unwrap(), 0));
+        assert_eq!(evm_test.stack,temp_stack);
     }
 
     #[test]
     fn sgt_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![
-            0x60, 0x08, 0x60, 0x04, 0x03, 0x60, 0x06, 0x60, 0x03, 0x03, 0x13,
-        ];
+        let excute_codes = "6008600403600660030313";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000001",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn eq_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x08, 0x60, 0x08, 0x14];
+        let excute_codes = "6008600814";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000001",hex::encode(evm_test.stack.get(1).data));
     }
 
     #[test]
     fn is_zero_test() {
         Lazy::force(&INIT_LOG);
-        let bytes = vec![0x60, 0x00, 0x15];
+        let excute_codes = "600015";
+        let bytes = hex::decode(excute_codes).unwrap();
         let mut evm_test = Evm::new(bytes);
         evm_test.run();
-        println!("{:?}", evm_test.stack);
+        assert_eq!("0000000000000000000000000000000000000000000000000000000000000001",hex::encode(evm_test.stack.get(1).data));
     }
 }

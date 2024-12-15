@@ -5,7 +5,7 @@ use num_bigint::BigUint;
 
 // 实现一个存储结构清晰的evm栈结构，存储时尽量不使用第三方库的类型比如BigUint进行存储
 // 但计算时可以借用BigUint进行计算，避免复杂的位运算
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,PartialEq)]
 pub struct Stack(pub Vec<StackData>);
 impl Stack {
     pub fn new() -> Self {
@@ -33,7 +33,7 @@ impl Stack {
         self.0.swap(top-1,top-index-1);
     }
 }
-#[derive(Clone)]
+#[derive(Clone,PartialEq)]
 pub struct StackData {
     // 栈宽存储的位数256位，最大深度1024
     // 16*16 = 256 使用u16，数组长度为16。
