@@ -6,7 +6,7 @@ mini-evm 是一个基于 Rust 的简单以太坊虚拟机（EVM）实现，旨�
 
 本项目实现的所有指令实现提供了单元测试用例，整个执行过程输出相对友好的日志，帮助个人去理解evm执行一个合约代码的过程.
 ```git
-git checkout stable
+git checkout main
 ```
 ```rust
 cargo test 单元测试函数的名称 
